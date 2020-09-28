@@ -1,0 +1,102 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+@{ 
+    var finalString = String.Empty;
+}
+
+<div class="jumbotron">
+    <h1>ASP.NET</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <p>
+            @using (@Html.BeginForm("ListSummary", "Home", FormMethod.Post))
+            {
+                <text>2D Code:</text>
+                @Html.Editor("finish" @*, new { HtmlAttributes = new { @class = "datepicker" } }*@ )
+
+                //check input valid or not. If valid add into return string. If it is not, pop up a error message
+
+                <input type="submit" value="Finish" />
+            }
+        </p>
+        <div>
+            
+                <label>Barcode Scan</label>
+                <input id="scan" type="text" />
+                <input type="button" id="summary" value="Get Summary" />
+            
+        </div>
+    </div>
+</div>
+<script>
+    var finalresult = "";
+    $('#scan').bind('keydown', function (event) {
+        if (event.keyCode == "13") {
+            var res = document.getElementById('scan').value;
+            
+            //console.log(res.substring(0,6).toLowerCase());
+            if ((res.substring(0, 6).toLowerCase() == "mx2d1p" || res.substring(0, 6).toLowerCase() == "ms2d1p")
+                && res.substring(16, 17).toLowerCase() == "q"
+                && res.substring(29, 30).toLowerCase() == "s"
+                && res.substring(42, 45).toLowerCase() == "13q"
+                && res.substring(49, 50).toLowerCase() == "b"
+                && res.substring(60, 63).toLowerCase() == "12d"
+                && res.substring(71, 73).toLowerCase() == "4l"
+                && res.substring(93, 96).toLowerCase() == "mlx"
+                && res.length == 99
+                ) {
+                //console.log("matched");
+                finalresult = finalresult + "|" + res;
+
+                document.getElementById('finish').value = finalresult;
+                //alert(finalresult);
+                res.value = '';
+                document.getElementById('scan').value = '';
+                return;
+            }
+            else {
+                alert("Not a valid label");
+                res.value = '';
+                document.getElementById('scan').value = '';
+                return;
+            }           
+            
+            //code.Substring(0, 6).ToLower() == "mx2d1p"
+            //    && code.Substring(16, 1).ToLower() == "q"
+            //    && code.Substring(29, 1).ToLower() == "s"
+            //    && code.Substring(42, 3).ToLower() == "13q"
+            //    && code.Substring(49, 1).ToLower() == "b"
+            //    && code.Substring(60, 3).ToLower() == "12d"
+            //    && code.Substring(71, 2).ToLower() == "4l"
+            //    && code.Substring(93, 3).ToLower() == "mlx"
+            //    && length == 99
+        }
+    })
+
+    $(document).ready(function () {
+        $("#summary").click(function () {
+            //document.getElementById('finish').value = finalresult;
+            console.log("Summary button click" + finalresult);
+            console.log("finish update to: " + document.getElementById('finish').value);
+            
+            $.ajax({
+                url: '/Home/ListSummary',
+                type: 'POST',
+                dataType: 'json',
+                data: { result: finalresult },
+                success: function (data) {
+
+                }, error: function (data) {
+
+                }
+            });
+
+            window.location.href = '/Home/ListSummary';
+        });
+    });
+
+</script>
